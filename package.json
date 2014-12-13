@@ -8,6 +8,7 @@
   "dependencies": {
     "express": "^4.9.8",
     "jade": "^1.8.1",
+    "numeric": "^1.2.6",
     "stylus": "^0.49.3"
   },
   "engines": {
