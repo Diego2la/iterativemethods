@@ -1,6 +1,34 @@
-doctype html
-html
-    include head
-    body
-        h1 My Site
-        p Welcome to my super lame site.
+extends include/layout
+
+block title
+    title Главная страница
+
+block content
+    div.jumbotron
+        h2 Численные методы
+        p
+            | На этом сайте представлены 3 лабораторные работы по Численным методам.
+            br
+            | Автор:
+            = ' '
+            span.label.label-success Тюрин Дмитрий Александрович
+
+    div.row
+        div.col-lg-4
+            h3 Лаба 1
+            p Решение СЛАУ "Неявным методом скорейшего спуска" и "Неявным методом с Чебышевским набором параметров"
+            p
+                a.btn.btn-primary(href='lab1', role='button') Открыть &raquo;
+        div.col-lg-4
+            h3 Лаба 2
+            p Решение СЛАУ "Неявным методом скорейшего спуска" и "Неявным методом с Чебышевским набором параметров", сравнение результатов.
+            p
+                a.btn.btn-primary(href='lab2', role='button') Открыть &raquo;
+        div.col-lg-4
+            h3 Лаба 2
+            p Решение СЛАУ "Неявным методом скорейшего спуска" и "Неявным методом с Чебышевским набором параметров", сравнение результатов.
+            p
+                a.btn.btn-primary(href='lab3', role='button') Открыть &raquo;
+
+    //div(ng-view)
+    //table.matrix

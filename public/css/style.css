@@ -1,0 +1,35 @@
+body {
+  padding-top: 20px;
+}
+.lab {
+  text-align: center;
+}
+.matrix input {
+  border: none;
+  width: 40px;
+  font-size: 14px;
+  padding: 2px;
+}
+.matrix input:hover {
+  background-color: #eee;
+}
+.matrix input:focus {
+  background-color: #ccf;
+}
+.matrix input:not(:focus) {
+  text-align: right;
+}
+.matrix table {
+  border-collapse: collapse;
+}
+.matrix td {
+  border: 1px solid #999;
+  padding: 0;
+}
+.matrix tr:first-child td,
+.matrix td:first-child {
+  background-color: #ccc;
+  padding: 1px 3px;
+  font-weight: bold;
+  text-align: center;
+}
