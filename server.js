@@ -45,20 +45,12 @@ app.get('/genB', function(req, res) {
   res.json(generateMatrixB(n));
 });
 
-app.get('/', function(req, res) {
-  res.render('index');
-});
-
 app.get('/lab1', function(req, res) {
   res.render('lab1');
 });
 
-app.get('/lab2', function(req, res) {
-  res.render('lab2');
-});
-
-app.get('/lab3', function(req, res) {
-  res.render('lab3');
+app.get('/', function(req, res) {
+  res.render('index');
 });
 
 app.get('*', function (req, res) {
