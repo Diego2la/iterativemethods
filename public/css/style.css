@@ -1,36 +1,31 @@
 body {
   padding-top: 20px;
-  padding-bottom: 50px;
+  padding-bottom: 60px;
 }
-.lab {
+.lab-title {
   text-align: center;
 }
-.matrix input {
-  border: none;
-  width: 40px;
-  font-size: 14px;
-  padding: 2px;
+#lab1 input {
+  width: 50px;
+  display: inline-block;
+  margin: 0 10px;
 }
-.matrix input:hover {
-  background-color: #eee;
+#lab1 button {
+  margin: 0 20px;
 }
-.matrix input:focus {
-  background-color: #ccf;
+.prokrutka {
+  height: 200px;
+  width: 400px;
+  background: #fff;
+  border: 1px solid #c1c1c1;
+  overflow-x: scroll;
+  overflow-y: scroll;
 }
-.matrix input:not(:focus) {
-  text-align: right;
+.matrix {
+  width: 20px;
+  margin-top: 10px;
+  margin-left: 10px;
 }
-.matrix table {
-  border-collapse: collapse;
-}
-.matrix td {
-  border: 1px solid #999;
-  padding: 0;
-}
-.matrix tr:first-child td,
-.matrix td:first-child {
-  background-color: #ccc;
-  padding: 1px 3px;
-  font-weight: bold;
-  text-align: center;
+.top-margin {
+  margin-top: 10px;
 }
