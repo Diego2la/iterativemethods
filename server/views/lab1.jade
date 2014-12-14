@@ -19,31 +19,42 @@ block content
     p Желательно выполнить проверку работы программы для двух-трех матриц порядка 103−104. Сделать выводы относительно эффективности реализаций алгоритмов для задач такого порядка. Также сравнить эффективность реализаций относительно друг друга.
 
     div#lab1(ng-controller='Lab1Ctrl')
-        p.lead Генерация матриц
+        p.lead Реализация
         p
-            | Сгенарируем серию матриц A и b порядка от
-            input(type='number', class='form-control', ng-model='nMin', min='1', max='{{nMax}}', required)
+            | Решить СЛАУ порядка от
+            input(type='number' class='form-control' ng-model='nMin' max='{{nMax}}' min='1' required)
             | до
-            input(type='number', class='form-control', ng-model='nMax', min='{{nMin}}', max='100', required)
-            button.btn.btn-primary(type='button' ng-click='generate()') Сгенерировать
+            input(type='number' class='form-control' ng-model='nMax' min='{{nMin}}' max='100' required)
+            button.btn.btn-primary(type='button' ng-click='solve()') Решить
 
         div.row(ng-hide='matrixIsHidden')
             div.col-xs-2
                 div.list-group
-                    a(ng-repeat='val in matrix' ng-click='select(val)' ng-class="getTabClass(val.n)") n = {{val.n}}
-            div.col-xs-6
-                b A
-                matrix-a
-            div.col-xs-4
-                b b
-                matrix-b
-        div.alert.alert-warning.top-margin
-            | Используемые методы решения СЛУА работают только для положительно определенных матриц.
-            | В данной работе реализована генерация данных матриц, но этот процесс довольно долгий.
-            | Чтобы избежать зависаний браузера, рекомендуется работать с матрицами не выше
-            = ' '
-            b  8 порядка
-            | .
+                    a(ng-repeat='m in matrix' ng-click='select(m.n)' ng-class="getTabClass(m.n)") n = {{m.n}}
+            div.col-xs-5
+                p.lead A
+                matrix-table(data='sel.A')
+            div.col-xs-5
+                p.lead b
+                matrix-row(data='sel.b')
+        div.row.top-margin(ng-hide='matrixIsHidden')
+            div.col-xs-2
+            div.col-xs-5
+                p.lead Неявный методом с Чебышевским набором параметров
+                matrix-row(data='sel.chebyshev.res')
+                p
+                    | Колличество итераций: {{sel.chebyshev.k}}
+                    br
+                    | Время решения: {{sel.chebyshev.time}} мс
+                    br
+                    | Погрешность : {{sel.chebyshev.error.toFixed(2)}}
 
-        p.lead Решение СЛАУ Неявным методом скорейшего спуска
-
+            div.col-xs-5
+                p.lead Неявный методом скорейшего спуска
+                matrix-row(data='sel.descent.res')
+                p
+                    | Колличество итераций: {{sel.descent.k}}
+                    br
+                    | Время решения: {{sel.descent.time}} мс
+                    br
+                    | Погрешность : {{sel.descent.error.toFixed(2)}}
