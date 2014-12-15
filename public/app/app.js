@@ -96,8 +96,48 @@ app.factory('matrixSolver', function($window) {
         return M;
     }
 
+    function scalar(a, b) {
+        var n = a.length;
+        var sum = 0;
+        for (var i = 0; i < n; i++) {
+            sum += a[i] * b[i];
+        }
+        return sum;
+    }
+
     // Неявный метод скорейшего спуска
-    function resolveDescent(m) {}
+    function resolveDescent(m) {
+        var n = m.n;
+        var A = m.A;
+        var b = m.b;
+
+        var end, start = new Date().getTime();
+        var r, T, xPrev, xNext = b;
+        var k = 0;
+        var normVal = 0;
+        do{
+            xPrev = xNext;
+            r = num.sub(num.dot(A, xPrev), b);
+            console.log('r = ' + JSON.stringify(r));
+            T = scalar(r, r) / scalar(num.dot(A, r), r);
+            console.log('scalar(r, r) = ' + JSON.stringify(scalar(r, r)));
+            console.log('T = ' + JSON.stringify(T));
+            xNext = num.neg(num.dot(r, T));
+            console.log('xNext = ' + JSON.stringify(xNext));
+            xNext = num.add(xNext, xPrev);
+            k += 1;
+            normVal = norm(xPrev, xNext);
+            end = new Date().getTime();
+            console.log('norm = ' + JSON.stringify(normVal));
+        } while(normVal > 0.01 && (end - start) < 0.5);
+        return {
+            res: xNext,
+            k: k,
+            time: end - start,
+            error: normVal,
+            solved: (end - start) < 500
+        }
+    }
 
     // Неявный метод с Чебышевским набором параметров
     function resolveChebyshev(m) {
@@ -131,7 +171,7 @@ app.factory('matrixSolver', function($window) {
             return T0 / (1 + ro0 * t(k));
         };
 
-        var start = new Date().getTime();
+        var end, start = new Date().getTime();
         var xPrev, xNext = b;
         var k = 0;
         var normVal = 0;
@@ -143,14 +183,15 @@ app.factory('matrixSolver', function($window) {
             xNext = num.add(xNext, xPrev);
             k = k + 1;
             normVal = norm(xPrev, xNext);
+            end = new Date().getTime();
             console.log('norm = ' + JSON.stringify(normVal));
-        } while(normVal > 0.01);
-        var end = new Date().getTime();
+        } while(normVal > 0.01 && (end - start) < 0.5);
         return {
             res: xNext,
             k: k,
             time: end - start,
-            error: normVal
+            error: normVal,
+            solved: (end - start) < 500
         }
     }
 
@@ -169,7 +210,7 @@ app.factory('matrixSolver', function($window) {
                 });
                 var sel = i - nMin;
                 matrix[sel].chebyshev = resolveChebyshev(matrix[sel]);
-                console.log('!!!!!!!!!!!!!!!' + JSON.stringify(matrix[sel].chebyshev));
+                //console.log('!!!!!!!!!!!!!!!' + JSON.stringify(matrix[sel].chebyshev));
                 matrix[sel].descent = resolveDescent(matrix[sel]);
             }
             return matrix;

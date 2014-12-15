@@ -31,30 +31,35 @@ block content
             div.col-xs-2
                 div.list-group
                     a(ng-repeat='m in matrix' ng-click='select(m.n)' ng-class="getTabClass(m.n)") n = {{m.n}}
-            div.col-xs-5
-                p.lead A
-                matrix-table(data='sel.A')
-            div.col-xs-5
-                p.lead b
-                matrix-row(data='sel.b')
-        div.row.top-margin(ng-hide='matrixIsHidden')
-            div.col-xs-2
-            div.col-xs-5
-                p.lead Неявный методом с Чебышевским набором параметров
-                matrix-row(data='sel.chebyshev.res')
-                p
-                    | Колличество итераций: {{sel.chebyshev.k}}
-                    br
-                    | Время решения: {{sel.chebyshev.time}} мс
-                    br
-                    | Погрешность : {{sel.chebyshev.error.toFixed(2)}}
+            div.col-xs-10
+                div.row
+                    div.col-xs-5
+                        h4 A
+                        matrix-table(data='sel.A')
+                    div.col-xs-5
+                        h4 b
+                        matrix-row(data='sel.b')
+                div.row.top-margin(ng-hide='matrixIsHidden')
+                    div.col-xs-5
+                        h4 Неявный метод Чебышева
+                        matrix-row(data='sel.chebyshev.res')
+                        p
+                            | СЛАУ решено: {{sel.chebyshev.solved}}
+                            br
+                            | Колличество итераций: {{sel.chebyshev.k}}
+                            br
+                            | Время решения: {{sel.chebyshev.time}} мс
+                            br
+                            | Погрешность : {{sel.chebyshev.error.toFixed(4)}}
 
-            div.col-xs-5
-                p.lead Неявный методом скорейшего спуска
-                matrix-row(data='sel.descent.res')
-                p
-                    | Колличество итераций: {{sel.descent.k}}
-                    br
-                    | Время решения: {{sel.descent.time}} мс
-                    br
-                    | Погрешность : {{sel.descent.error.toFixed(2)}}
+                    div.col-xs-5
+                        h4 Неявный метод скорейшего спуска
+                        matrix-row(data='sel.descent.res')
+                        p
+                            | СЛАУ решено: {{sel.descent.solved}}
+                            br
+                            | Колличество итераций: {{sel.descent.k}}
+                            br
+                            | Время решения: {{sel.descent.time}} мс
+                            br
+                            | Погрешность : {{sel.descent.error.toFixed(4)}}
