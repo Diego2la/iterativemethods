@@ -1,4 +1,4 @@
-var app = angular.module('app', ['ngResource', 'ngRoute']);
+var app = angular.module('app', ['ngResource', 'ngRoute', 'angular-flot']);
 
 app.config(function($locationProvider) {
     $locationProvider.html5Mode({
@@ -12,12 +12,44 @@ app.controller('Lab1Ctrl', function($scope, matrixSolver){
     $scope.nMax = 7;
     $scope.matrixIsHidden = true;
 
+    $scope.flotChartOptions = {
+        series: {
+            lines: { show: true },
+            points: { show: true }
+        }
+    };
+
+    function prepareFlotData() {
+        var size = $scope.nMax - $scope.nMin + 1;
+        var n, cheb, desc;
+        var datCheb = new Array();
+        var datDesc = new Array();
+        for (var i = 0; i < size; i++) {
+            n = $scope.matrix[i].n;
+            cheb = $scope.matrix[i].chebyshev;
+            desc = $scope.matrix[i].descent;
+            if (cheb.error < 10000) {
+                datCheb.push( [n, cheb.error] );
+            }
+            if (desc.error < 10000) {
+                datDesc.push( [n, desc.error] );
+            }
+        }
+        $scope.flotData = [
+            { label: "Неявный метод Чебышева", data: datCheb },
+            { label: "Неявный метод скорейшего спуска", data: datDesc }
+        ];
+        console.log('flotData = ' + JSON.stringify($scope.flotData));
+    }
+
     $scope.solve = function() {
         if (isNaN($scope.nMin) || isNaN($scope.nMax) || $scope.nMin > $scope.nMax || $scope.nMin < 1) {
             alert('Wrong sizes');
+            //console.log($scope.nMin + '   ' + $scope.nMax);
             return;
         }
         $scope.matrix = matrixSolver.solve($scope.nMin, $scope.nMax);
+        prepareFlotData();
         $scope.select($scope.nMin);
         $scope.matrixIsHidden = false;
     }
@@ -39,10 +71,20 @@ app.controller('Lab1Ctrl', function($scope, matrixSolver){
     }
 });
 
+function extend(Child, Parent) {
+    var F = function() { }
+    F.prototype = Parent.prototype
+    Child.prototype = new F()
+    Child.prototype.constructor = Child
+    Child.superclass = Parent.prototype
+}
+
 app.factory('matrixSolver', function($window) {
     var num = $window.numeric;
     var MIN = -100;
     var MAX = 100;
+    var CALC_ERROR = 0.01; //мс
+    var CALC_TIME = 3000;
 
     function getRandInt() {
         var val = 0;
@@ -105,100 +147,87 @@ app.factory('matrixSolver', function($window) {
         return sum;
     }
 
-    // Неявный метод скорейшего спуска
-    function resolveDescent(m) {
-        var n = m.n;
-        var A = m.A;
-        var b = m.b;
+    function Solver(m) {
+        this.n = m.n;
+        this.A = m.A;
+        this.invM = m.invM;
+        this.b = m.b;
 
-        var end, start = new Date().getTime();
-        var r, T, xPrev, xNext = b;
-        var k = 0;
-        var normVal = 0;
-        do{
-            xPrev = xNext;
-            r = num.sub(num.dot(A, xPrev), b);
-            console.log('r = ' + JSON.stringify(r));
-            T = scalar(r, r) / scalar(num.dot(A, r), r);
-            console.log('scalar(r, r) = ' + JSON.stringify(scalar(r, r)));
-            console.log('T = ' + JSON.stringify(T));
-            xNext = num.neg(num.dot(r, T));
-            console.log('xNext = ' + JSON.stringify(xNext));
-            xNext = num.add(xNext, xPrev);
-            k += 1;
-            normVal = norm(xPrev, xNext);
-            end = new Date().getTime();
-            console.log('norm = ' + JSON.stringify(normVal));
-        } while(normVal > 0.01 && (end - start) < 0.5);
-        return {
-            res: xNext,
-            k: k,
-            time: end - start,
-            error: normVal,
-            solved: (end - start) < 500
+        this.start;
+        this.end;
+        this.xPrev;
+        this.xNext = this.b;
+        this.k = 0;
+
+        this.calc = function () {
+            this.start = new Date().getTime();
+            do {
+                this.xPrev = this.xNext;
+                this.do();
+                this.k += 1;
+                var normVal = norm(this.xPrev, this.xNext);
+                this.end = new Date().getTime();
+            } while (normVal > CALC_ERROR && (this.end - this.start) < CALC_TIME);
+            return {
+                res: this.xNext,
+                k: this.k,
+                time: (this.end - this.start)
+            }
+        }
+        this.do = function () {}
+    }
+
+    // Неявный метод скорейшего спуска
+    function Descent(m) {
+        Descent.superclass.constructor.call(this, m);
+        this.do = function () {
+            var r = num.sub(num.dot(this.A, this.xPrev), this.b);
+            var invBr = num.dot(this.invM, r);
+            var T = scalar(r, invBr) / scalar(num.dot(this.A, invBr), invBr);
+            this.xNext = num.neg(num.dot(r, T));
+            this.xNext = num.dot(this.invM, this.xNext);
+            this.xNext = num.add(this.xNext, this.xPrev);
         }
     }
+    extend(Descent, Solver);
+
 
     // Неявный метод с Чебышевским набором параметров
-    function resolveChebyshev(m) {
-        var n = m.n;
-        var A = m.A;
-        var invM = m.invM;
-        var b = m.b;
-        console.log('n = ' + JSON.stringify(n));
-        console.log('A = ' + JSON.stringify(A));
-        console.log('invM = ' + JSON.stringify(invM));
-        console.log('b = ' + JSON.stringify(b));
+    function Chebyshev(m) {
+        Chebyshev.superclass.constructor.call(this, m);
 
-        var C = num.dot(invM, A);
-        var eigenvalues = num.eig(C).lambda.x;
-        var eigenMin = Math.min.apply(Math, eigenvalues);
-        var eigenMax = Math.max.apply(Math, eigenvalues);
-        console.log('C = ' + JSON.stringify(C));
-        console.log('eigenvalues = ' + JSON.stringify(eigenvalues));
+        this.C = num.dot(this.invM, this.A);
+        this.eigenvalues = num.eig(this.C).lambda.x;
 
-        var eps = eigenMin / eigenMax;
-        console.log('eps = ' + eps);
-        var ro0 = (1 - eps) / (1 + eps);
-        console.log('ro0 = ' + ro0);
+        this.eigenMin = Math.min.apply(Math, this.eigenvalues);
+        this.eigenMax = Math.max.apply(Math, this.eigenvalues);
 
-        var t = function (k) {
-            return Math.cos((2 * k - 1) * Math.PI / (2 * n));
+        this.eps = this.eigenMin / this.eigenMax;
+        this.ro0 = (1 - this.eps) / (1 + this.eps);
+
+        this.t = function (k) {
+            return Math.cos((2 * k - 1) * Math.PI / (2 * this.n));
         };
 
-        var T0 = 2 / (eigenMin + eigenMax);
-        var T = function (k) {
-            return T0 / (1 + ro0 * t(k));
+        this.T0 = 2 / (this.eigenMin + this.eigenMax);
+        this.T = function (k) {
+            return this.T0 / (1 + this.ro0 * this.t(k));
         };
 
-        var end, start = new Date().getTime();
-        var xPrev, xNext = b;
-        var k = 0;
-        var normVal = 0;
-        do{
-            xPrev = xNext;
-            xNext = num.sub(b, num.dot(A, xPrev));
-            xNext = num.mul(xNext, T(k + 1));
-            xNext = num.dot(invM, xNext);
-            xNext = num.add(xNext, xPrev);
-            k = k + 1;
-            normVal = norm(xPrev, xNext);
-            end = new Date().getTime();
-            console.log('norm = ' + JSON.stringify(normVal));
-        } while(normVal > 0.01 && (end - start) < 0.5);
-        return {
-            res: xNext,
-            k: k,
-            time: end - start,
-            error: normVal,
-            solved: (end - start) < 500
+        this.do = function () {
+            this.xNext = num.sub(this.b, num.dot(this.A, this.xPrev));
+            this.xNext = num.mul(this.xNext, this.T(this.k + 1));
+            this.xNext = num.dot(this.invM, this.xNext);
+            this.xNext = num.add(this.xNext, this.xPrev);
         }
     }
+    extend(Chebyshev, Solver);
 
     return {
         solve: function(nMin, nMax) {
             var matrix = new Array();
             for (var i = nMin; i <= nMax; i++) {
+                console.log('---> n = ' + i);
                 var A = generateMatrixA(i);
                 var b = generateMatrixB(i);
                 var inv = num.transpose(A);
@@ -208,10 +237,12 @@ app.factory('matrixSolver', function($window) {
                     b: num.dot(inv, b),
                     invM: num.transpose(generateMatrixM(i))
                 });
-                var sel = i - nMin;
-                matrix[sel].chebyshev = resolveChebyshev(matrix[sel]);
-                //console.log('!!!!!!!!!!!!!!!' + JSON.stringify(matrix[sel].chebyshev));
-                matrix[sel].descent = resolveDescent(matrix[sel]);
+                var sel = matrix[i - nMin];
+                sel.chebyshev = new Chebyshev(sel).calc();
+                //console.log('sel.chebyshev = ' + JSON.stringify(sel.chebyshev));
+                sel.descent = new Descent(sel).calc();
+                sel.chebyshev.error = norm(num.dot(A, sel.chebyshev.res), b);
+                sel.descent.error = norm(num.dot(A, sel.descent.res), b);
             }
             return matrix;
         }
@@ -230,7 +261,6 @@ app.directive('matrixTable', function() {
         }
     };
 });
-
 
 app.directive('matrixRow', function() {
     return {

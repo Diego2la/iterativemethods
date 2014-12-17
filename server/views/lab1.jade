@@ -22,15 +22,16 @@ block content
         p.lead Реализация
         p
             | Решить СЛАУ порядка от
-            input(type='number' class='form-control' ng-model='nMin' max='{{nMax}}' min='1' required)
+            input(type='number' class='form-control' ng-model='nMin' max='{{nMax}}' required)
             | до
-            input(type='number' class='form-control' ng-model='nMax' min='{{nMin}}' max='100' required)
+            input(type='number' class='form-control' ng-model='nMax' min='{{nMin}}' required)
             button.btn.btn-primary(type='button' ng-click='solve()') Решить
 
         div.row(ng-hide='matrixIsHidden')
             div.col-xs-2
-                div.list-group
-                    a(ng-repeat='m in matrix' ng-click='select(m.n)' ng-class="getTabClass(m.n)") n = {{m.n}}
+                div.list-prokrutka
+                    div.list-group
+                        a(ng-repeat='m in matrix' ng-click='select(m.n)' ng-class="getTabClass(m.n)") n = {{m.n}}
             div.col-xs-10
                 div.row
                     div.col-xs-5
@@ -44,8 +45,6 @@ block content
                         h4 Неявный метод Чебышева
                         matrix-row(data='sel.chebyshev.res')
                         p
-                            | СЛАУ решено: {{sel.chebyshev.solved}}
-                            br
                             | Колличество итераций: {{sel.chebyshev.k}}
                             br
                             | Время решения: {{sel.chebyshev.time}} мс
@@ -56,10 +55,10 @@ block content
                         h4 Неявный метод скорейшего спуска
                         matrix-row(data='sel.descent.res')
                         p
-                            | СЛАУ решено: {{sel.descent.solved}}
-                            br
                             | Колличество итераций: {{sel.descent.k}}
                             br
                             | Время решения: {{sel.descent.time}} мс
                             br
                             | Погрешность : {{sel.descent.error.toFixed(4)}}
+        p.lead Сравнение методов
+            flot(dataset='flotData' options='flotChartOptions' width='900px' height='400px')

@@ -26,6 +26,10 @@ app.get('/lab1', function(req, res) {
   res.render('lab1');
 });
 
+app.get('/lab2', function(req, res) {
+  res.render('lab2');
+});
+
 app.get('/', function(req, res) {
   res.render('index');
 });

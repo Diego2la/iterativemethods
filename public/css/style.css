@@ -6,12 +6,16 @@ body {
   text-align: center;
 }
 #lab1 input {
-  width: 50px;
+  width: 80px;
   display: inline-block;
   margin: 0 10px;
 }
 #lab1 button {
   margin: 0 20px;
+}
+.list-prokrutka {
+  height: 500px;
+  overflow-y: scroll;
 }
 .prokrutka {
   height: 200px;
@@ -28,4 +32,10 @@ body {
 }
 .top-margin {
   margin-top: 30px;
+}
+.col-center-block {
+  float: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
